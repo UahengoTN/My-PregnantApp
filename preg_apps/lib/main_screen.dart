@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:preg_apps/bookappoitments_screen.dart';
+import 'package:preg_apps/calendar_sreen.dart';
+import 'package:preg_apps/centres_screen.dart';
+import 'package:preg_apps/educationaltips_screen.dart';
+import 'package:preg_apps/missedappoitments_screen.dart';
+import 'package:preg_apps/testing.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -14,6 +20,21 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  final List<MenuButtonData> _menuButtons = [
+    MenuButtonData(
+        'Testing / Results', Icons.science, PregnancySymptomsScreen()),
+    MenuButtonData('Educational Tips', Icons.school, EducationTipsScreen()),
+    MenuButtonData('Centers', Icons.location_on, CentersScreen()),
+    MenuButtonData('Missed Appointments', Icons.event_busy,
+        MissedAppointmentsScreen()), // Replace with actual screen
+    MenuButtonData('Book Appointments', Icons.event,
+        BookAppointmentScreen()), // Replace with actual screen
+    MenuButtonData('Calendar', Icons.calendar_today,
+        PregnancyCalendarScreen()), // Replace with actual screen
+    MenuButtonData('Book for Monitoring', Icons.monitor,
+        Placeholder()), // Replace with actual screen
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,103 +45,69 @@ class _MainScreenState extends State<MainScreen> {
         builder: (context, constraints) {
           return Column(
             children: [
-              // Image at the top
-              ClipRRect(
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(25),
-                  bottomRight: Radius.circular(25),
-                ),
-                child: Image.asset(
-                  'assets/Image1.png', // Replace with your image asset
-                  width: constraints.maxWidth,
-                  height: constraints.maxHeight *
-                      0.35, // Occupy 35% of the screen height
-                  fit: BoxFit.cover,
-                ),
-              ),
-              // Menu buttons below the image
+              _buildHeaderImage(constraints),
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildMenuButton(
-                          'Testing / Results', Icons.arrow_downward),
-                      _buildMenuButton(
-                          'Educational Tips', Icons.arrow_downward),
-                      _buildMenuButton('Centers', Icons.arrow_downward),
-                      _buildMenuButton(
-                          'Missed Appointments', Icons.arrow_downward),
-                      _buildMenuButton(
-                          'Book Appointments', Icons.arrow_downward),
-                      _buildMenuButton('Calendar', Icons.calendar_today),
-                      _buildMenuButton(
-                          'Book for Monitoring', Icons.arrow_downward),
-                    ],
-                  ),
-                ),
+                child: _buildMenuButtons(constraints),
               ),
             ],
           );
         },
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.pink,
-        onTap: _onItemTapped,
+      bottomNavigationBar: _buildBottomNavigationBar(),
+    );
+  }
+
+  Widget _buildHeaderImage(BoxConstraints constraints) {
+    return ClipRRect(
+      borderRadius: BorderRadius.vertical(bottom: Radius.circular(25)),
+      child: Image.asset(
+        'assets/Image1.png',
+        width: constraints.maxWidth,
+        height: constraints.maxHeight * 0.35,
+        fit: BoxFit.cover,
       ),
     );
   }
 
-  Widget _buildMenuButton(String text, IconData icon) {
+  Widget _buildMenuButtons(BoxConstraints constraints) {
+    return ListView.builder(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      itemCount: _menuButtons.length,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: _buildMenuButton(_menuButtons[index]),
+        );
+      },
+    );
+  }
+
+  Widget _buildMenuButton(MenuButtonData buttonData) {
     return Container(
-      width: double.infinity, // Make the button take up full width
-      height: 50, // Fixed height for equal-sized buttons
+      height: 50,
+      width: double.infinity,
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: () => _navigateToScreen(buttonData.screen),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.pinkAccent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         ),
         child: Stack(
           children: [
-            // Centered Text
             Center(
               child: Text(
-                text,
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 16,
-                ),
+                buttonData.text,
+                style: TextStyle(color: Colors.black, fontSize: 16),
               ),
             ),
-            // Icon on the right and shifted down slightly
             Positioned(
               right: 16,
-              top: 12, // Shift the icon down by adjusting the 'top' property
+              top: 12,
               child: Icon(
-                icon,
-                color: const Color.fromARGB(255, 20, 14, 14)
-                    .withOpacity(0.8), // Adjust icon brightness
-                size:
-                    26, // You can also adjust the size of the icon if necessary
+                buttonData.icon,
+                color: Colors.black.withOpacity(0.8),
+                size: 26,
               ),
             ),
           ],
@@ -128,4 +115,32 @@ class _MainScreenState extends State<MainScreen> {
       ),
     );
   }
+
+  Widget _buildBottomNavigationBar() {
+    return BottomNavigationBar(
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+        BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
+      ],
+      currentIndex: _selectedIndex,
+      selectedItemColor: Colors.pink,
+      onTap: _onItemTapped,
+    );
+  }
+
+  void _navigateToScreen(Widget screen) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => screen),
+    );
+  }
+}
+
+class MenuButtonData {
+  final String text;
+  final IconData icon;
+  final Widget screen;
+
+  MenuButtonData(this.text, this.icon, this.screen);
 }
